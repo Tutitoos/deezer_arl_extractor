@@ -31,11 +31,9 @@ It is designed for developers, researchers, and technical users who need to auto
 - [x] Automatic saving of extracted ARL cookies
 - [ ] Automatic verification of ARL status
 - [ ] Graphical User Interface (GUI) for easier use
-- [ ] Local encryption of credentials
 - [ ] Export results to CSV or HTML
-- [ ] Full multiplatform compatibility
+- [ ] Full multiplatform compatibility (Windows, Linux, macOS)
 - [ ] Proxy configuration support
-- [ ] Advanced configuration customization (timeouts, retries)
 - [ ] Support for scheduled execution (cron job or scheduler)
 - [ ] Automate CAPTCHA completion using [Anti Captcha](https://anti-captcha.com) or [2captcha](https://2captcha.com)
 
@@ -59,6 +57,7 @@ cd deezer_arl_extractor
 ```
 
 ### 2. Install Dependencies
+To install the required dependencies, you can use either `pip` or `pip3` depending on your environment:
 ```bash
 pip install -r requirements.txt
 playwright install
