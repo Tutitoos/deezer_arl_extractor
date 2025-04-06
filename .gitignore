@@ -1,0 +1,36 @@
+# Sensitive data
+/data/sessions.json
+/user_data/
+
+# Generated files
+/logs/
+/screenshots/
+
+# Python environment
+__pycache__/
+*.py[cod]
+*.egg-info/
+/dist/
+/build/
+/venv/
+.env
+*.env
+.pytest_cache/
+
+# Playwright cache
+/playwright/.cache/
+/playwright/artifacts/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
