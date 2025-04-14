@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import random
 from playwright.async_api import async_playwright, Page
-from datetime import datetime
+from datetime import datetime, time
 
 Path("./screenshots").mkdir(parents=True, exist_ok=True)
 Path("./data").mkdir(parents=True, exist_ok=True)
@@ -111,14 +111,16 @@ class SessionStorage:
 
         self.save_sessions()
 
-    def get_sessions_without_arl(self):
-        return [
-            s for s in self.sessions
-            if not s.get('arl')
-            and s.get('enable', False)
-        ]
+    def get_sessions(self):
+        sessions = []
 
-    def get_valid_sessions(self, max_age_days=30):
+        for session in self.sessions:
+            if session['arl'] is None or session['arl'] == "" or session.get('lastUpdated') is None or session.get('lastUpdated') == 0 or session.get('lastUpdated') >= datetime.now().timestamp() - (1 * 24 * 3600):
+                sessions.append(session)
+
+        return sessions
+
+    def get_valid_sessions(self, max_age_days=1):
         now = datetime.now().timestamp()
         valid_sessions = []
 
@@ -166,8 +168,8 @@ class Session:
             return cls(
                 email=session_data['email'],
                 password=session_data['password'],
+                enable=session_data.get('enable', True),
                 arl=session_data.get('arl'),
-                enable=session_data.get('enable', True)
             )
         return None
 
@@ -178,10 +180,10 @@ class Session:
             cls(
                 email=s['email'],
                 password=s['password'],
+                enable=s.get('enable', True),
                 arl=s.get('arl'),
-                enable=s.get('enable', True)
             )
-            for s in storage.get_sessions_without_arl()
+            for s in storage.get_sessions()
         ]
 
     @classmethod
@@ -386,12 +388,12 @@ class PlaywrightManager:
                 if page:
                     await page.close()
 
-    async def process_accounts_without_arl(self):
+    async def process_accounts(self):
         accounts = Session.load_without_arl()
         results = []
         total = len(accounts)
 
-        print(f"\n📦 Starting processing of {total} accounts without ARL")
+        print(f"\n📦 Starting processing of {total} accounts with expired or missing ARL")
 
         for index, account in enumerate(accounts, 1):
             print(f"📝 [{index}/{total}] Processing account: {account.email}")
@@ -449,7 +451,7 @@ async def main():
     playwright_manager = PlaywrightManager()
 
     try:
-        results = await playwright_manager.process_accounts_without_arl()
+        results = await playwright_manager.process_accounts()
 
         print("\n🎯 FINAL RESULTS:")
         for result in results:
