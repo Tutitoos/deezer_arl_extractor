@@ -115,7 +115,11 @@ class SessionStorage:
         sessions = []
 
         for session in self.sessions:
-            if session['arl'] is None or session['arl'] == "" or session.get('lastUpdated') is None or session.get('lastUpdated') == 0 or session.get('lastUpdated') >= datetime.now().timestamp() - (1 * 24 * 3600):
+            last_updated = session.get('lastUpdated') or 0
+            expired = last_updated < datetime.now().timestamp() - (1 * 24 * 3600)
+            no_arl = session.get('arl') is None or session.get('arl') == ""
+
+            if no_arl or expired:
                 sessions.append(session)
 
         return sessions
