@@ -463,6 +463,21 @@ async def main():
             arl_preview = f"ARL: {result['arl'][:10]}..." if result['success'] else "NO ARL"
             print(f"{status} {result['email']} - {arl_preview}")
 
+        # Guardar los ARLs exitosos en data/arls.txt
+        arls_path = Path('data/arls.txt')
+        arls = [result['arl'] for result in results if result['success'] and result['arl']]
+        if not arls:
+            with open(sessions_file, 'r') as f:
+                sessions = json.load(f)
+
+            arls = [s['arl'] for s in sessions if s.get('arl')]
+
+        arls_str = ','.join(arls)
+        with open(arls_path, 'w') as f:
+            f.write(arls_str)
+
+        print(f"\n📝 Archivo {arls_path} creado con {len(arls)} ARLs")
+
     except KeyboardInterrupt:
         print("\n🛑 Process interrupted by user")
     finally:
