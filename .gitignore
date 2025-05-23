@@ -1,6 +1,6 @@
 # Sensitive data
 /data/sessions.json
-/data/arls.txt
+/data/arls*
 /user_data/
 
 # Generated files

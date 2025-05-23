@@ -116,7 +116,7 @@ class SessionStorage:
 
         for session in self.sessions:
             last_updated = session.get('lastUpdated') or 0
-            expired = last_updated < datetime.now().timestamp() - (1 * 24 * 3600)
+            expired = last_updated < datetime.now().timestamp() - (15 * 24 * 3600)
             no_arl = session.get('arl') is None or session.get('arl') == ""
 
             if no_arl or expired:
@@ -463,20 +463,35 @@ async def main():
             arl_preview = f"ARL: {result['arl'][:10]}..." if result['success'] else "NO ARL"
             print(f"{status} {result['email']} - {arl_preview}")
 
-        # Guardar los ARLs exitosos en data/arls.txt
-        arls_path = Path('data/arls.txt')
-        arls = [result['arl'] for result in results if result['success'] and result['arl']]
-        if not arls:
+        # Guardar los ARLs exitosos en archivos separados por type
+        arls_by_type = {}
+        for result in results:
+            if result['success'] and result['arl']:
+                # Obtener el type desde sessions.json si no está en el resultado
+                type_value = None
+                if 'type' in result:
+                    type_value = result['type']
+                else:
+                    with open(sessions_file, 'r') as f:
+                        sessions = json.load(f)
+                    session = next((s for s in sessions if s['email'] == result['email']), None)
+                    type_value = session.get('type', 'unknown') if session else 'unknown'
+                arls_by_type.setdefault(type_value, []).append(result['arl'])
+
+        if not arls_by_type:
             with open(sessions_file, 'r') as f:
                 sessions = json.load(f)
+            for s in sessions:
+                type_value = s.get('type', 'unknown')
+                if s.get('arl'):
+                    arls_by_type.setdefault(type_value, []).append(s['arl'])
 
-            arls = [s['arl'] for s in sessions if s.get('arl')]
-
-        arls_str = ','.join(arls)
-        with open(arls_path, 'w') as f:
-            f.write(arls_str)
-
-        print(f"\n📝 Archivo {arls_path} creado con {len(arls)} ARLs")
+        for type_value, arls in arls_by_type.items():
+            arls_path = Path(f'data/arls_{type_value}.txt')
+            arls_str = ','.join(arls)
+            with open(arls_path, 'w') as f:
+                f.write(arls_str)
+            print(f"\n📝 Archivo {arls_path} creado con {len(arls)} ARLs para type '{type_value}'")
 
     except KeyboardInterrupt:
         print("\n🛑 Process interrupted by user")
